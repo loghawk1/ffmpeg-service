@@ -63,14 +63,28 @@ WHISPER_MODEL_CACHE_DIR=/app/whisper_cache
 
 ### Step 5: Deploy Worker Service
 
-Railway's Procfile supports multiple processes. To run both web and worker:
+**IMPORTANT:** The worker process MUST run for tasks to be processed!
 
-1. In Railway dashboard, create a new service from the same repository
-2. For the web service:
-   - Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-3. For the worker service:
+The application is configured to run both the web server and worker in a single Railway service:
+
+1. The `railway.json` file specifies: `bash start_railway.sh`
+2. This script starts both:
+   - Worker process (background)
+   - Web server (foreground)
+
+**Alternative: Separate Services**
+
+For better resource management, you can create two Railway services:
+
+1. **Web Service:**
+   - Command: `python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - Needs public port exposure
+
+2. **Worker Service:**
    - Command: `python worker.py`
-   - This service doesn't need a PORT
+   - No port needed
+   - Share same environment variables
+   - Can scale independently
 
 ### Step 6: Configure Health Checks
 
@@ -294,6 +308,16 @@ If queue length consistently > 10:
 
 ### Worker not processing tasks
 
+**Check if worker is running:**
+```bash
+ps aux | grep worker.py
+```
+
+**Check debug endpoint:**
+```bash
+curl https://your-app.railway.app/debug/queue
+```
+
 **Check Redis connection:**
 ```python
 import redis
@@ -305,6 +329,14 @@ print(r.ping())
 ```bash
 redis-cli -u your-redis-url
 > LLEN ffmpeg:queue
+```
+
+**Check logs for worker activity:**
+```bash
+# Look for these log messages:
+# - "Starting video processing worker..."
+# - "Worker connections established successfully"
+# - "Worker heartbeat - Queue length: X"
 ```
 
 ### Videos not accessible
