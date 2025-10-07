@@ -40,7 +40,7 @@ mkdir -p videos whisper_cache
 
 echo ""
 echo "📦 Installing Python dependencies..."
-pip3 install -r deps.txt
+pip3 install -r requirements.txt
 
 echo ""
 echo "🚀 Starting services..."
