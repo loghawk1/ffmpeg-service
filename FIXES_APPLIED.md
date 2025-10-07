@@ -3,6 +3,22 @@
 ## Date
 2025-10-07
 
+## CRITICAL FIX (Applied after initial deployment)
+
+### Supabase Method Name Error
+**Problem:** Worker crashed when trying to fetch task data with error:
+```
+AttributeError: 'SyncSelectRequestBuilder' object has no attribute 'maybeSingle'
+```
+
+**Root Cause:** Used JavaScript method name `maybeSingle()` instead of Python method name `maybe_single()`
+
+**Solution:** Changed `maybeSingle()` to `maybe_single()` in `app/services/supabase_service.py:99`
+
+**Impact:** This was preventing ALL tasks from being processed. Worker would dequeue task but immediately fail when fetching full task data.
+
+---
+
 ## Issues Addressed
 
 ### 1. Tasks Not Being Processed
