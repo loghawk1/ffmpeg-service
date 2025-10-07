@@ -1224,6 +1224,56 @@ curl -X POST "https://fantastic-endurance-production.up.railway.app/tasks/captio
 
 ---
 
+#### 3a. Expired or Forbidden URL (400)
+
+**Request:**
+```bash
+curl -X POST "https://fantastic-endurance-production.up.railway.app/tasks/caption" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "video_url": "https://example.com/video.mp4?Expires=1234567890&Signature=abc123",
+    "model_size": "small"
+  }'
+```
+
+**Response:**
+```json
+{
+  "detail": "Unable to access video URL: Access denied (403 Forbidden). The URL may have expired or requires authentication. Please ensure the URL is publicly accessible and not expired."
+}
+```
+
+**Common Causes:**
+- **Signed URLs with expiration**: Many cloud storage services (AWS S3, Alibaba OSS, Google Cloud Storage) generate signed URLs with time-limited access
+- **Expired credentials**: URL signatures that have passed their expiration time
+- **IP restrictions**: URLs that only work from specific IP addresses
+- **Authentication required**: URLs that require login or API keys
+
+**Solution:**
+- ✅ Generate a fresh signed URL with longer expiration
+- ✅ Use permanent public URLs if available
+- ✅ Ensure URL is accessible from any IP address
+- ✅ Test URL in browser or curl before submitting
+- ✅ For signed URLs, ensure expiration is at least 30 minutes in the future
+- ✅ Consider uploading to a public CDN instead
+
+**Example of Good vs Bad URLs:**
+
+```bash
+# ❌ BAD: Signed URL with expiration (will fail if expired)
+https://storage.example.com/video.mp4?Expires=1759965331&Signature=xyz
+
+# ✅ GOOD: Public URL without expiration
+https://cdn.example.com/public/video.mp4
+
+# ✅ GOOD: Signed URL with long expiration (30+ minutes)
+https://storage.example.com/video.mp4?Expires=9999999999&Signature=xyz
+```
+
+**Note:** The API handles URLs with query parameters correctly (e.g., `?Expires=...&Signature=...`). The URL parsing automatically extracts clean filenames without these parameters.
+
+---
+
 #### 4. Task Not Found (404)
 
 **Request:**
