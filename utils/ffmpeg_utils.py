@@ -123,8 +123,11 @@ def burn_subtitles(video_path: str, srt_text: str, output_path: str) -> None:
             output_path
         ]
 
+        logger.info(f"Running FFmpeg command: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         logger.info(f"Subtitles burned successfully: {output_path}")
+        if result.stderr:
+            logger.debug(f"FFmpeg stderr: {result.stderr[-500:]}")
 
     except subprocess.CalledProcessError as e:
         logger.error(f"FFmpeg error: {e.stderr}")
@@ -164,6 +167,7 @@ def merge_video_audio(
     """
     try:
         logger.info(f"Merging video {video_path} with audio {audio_path}")
+        logger.info(f"Settings: video_volume={video_volume}, audio_volume={audio_volume}, duration={duration}")
 
         if resize_mode == "cover":
             scale_filter = f"[0:v]scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height}[v]"
@@ -195,8 +199,11 @@ def merge_video_audio(
             output_path
         ]
 
+        logger.info(f"Running FFmpeg merge command...")
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         logger.info(f"Video and audio merged: {output_path}")
+        if result.stderr:
+            logger.debug(f"FFmpeg stderr: {result.stderr[-500:]}")
 
     except subprocess.CalledProcessError as e:
         logger.error(f"FFmpeg merge error: {e.stderr}")
@@ -226,8 +233,11 @@ def concat_videos(video_list_path: str, output_path: str) -> None:
             output_path
         ]
 
+        logger.info(f"Running FFmpeg concat command...")
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         logger.info(f"Videos concatenated: {output_path}")
+        if result.stderr:
+            logger.debug(f"FFmpeg stderr: {result.stderr[-500:]}")
 
     except subprocess.CalledProcessError as e:
         logger.error(f"FFmpeg concat error: {e.stderr}")
@@ -257,6 +267,7 @@ def add_background_music(
     try:
         video_duration = get_video_duration(video_path)
         logger.info(f"Adding background music to video (duration: {video_duration}s)")
+        logger.info(f"Settings: music_volume={music_volume}, video_volume={video_volume}")
 
         filter_complex = (
             f"[0:a]volume={video_volume}[va];"
@@ -279,8 +290,11 @@ def add_background_music(
             output_path
         ]
 
+        logger.info(f"Running FFmpeg background music command...")
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         logger.info(f"Background music added: {output_path}")
+        if result.stderr:
+            logger.debug(f"FFmpeg stderr: {result.stderr[-500:]}")
 
     except subprocess.CalledProcessError as e:
         logger.error(f"FFmpeg background music error: {e.stderr}")
